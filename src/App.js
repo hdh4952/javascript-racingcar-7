@@ -50,14 +50,13 @@ class App {
   }
 
   raceCarsForCount(cars, count) {
-    const carsAfterRaces = Array(count).fill(0).reduce((prev) => {
-      const carsAfterRace = this.raceCars(prev);
-      this.outputCars(carsAfterRace);
-      return carsAfterRace;
-    }, cars);
+    if (count <= 0) {
+      return this.winnersForCars(cars);
+    }
 
-    const winners = this.winnersForCars(carsAfterRaces);
-    return winners;
+    const carsAfterRace = this.raceCars(cars);
+    this.outputCars(carsAfterRace);
+    return this.raceCarsForCount(carsAfterRace, count - 1);
   }
 
   raceCars(cars) {
