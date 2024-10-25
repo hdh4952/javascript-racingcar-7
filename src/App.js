@@ -1,27 +1,5 @@
 import { MissionUtils } from "@woowacourse/mission-utils";
 
-class Car {
-  #name;
-  #distance;
-
-  constructor(name) {
-    this.#name = name;
-    this.#distance = 0;
-  }
-
-  move() {
-    this.#distance++;
-  }
-
-  get name() {
-    return this.#name;
-  }
-
-  get distance() {
-    return this.#distance;
-  }
-}
-
 class App {
   async run() {
     const cars = await this.inputCars();
@@ -50,7 +28,7 @@ class App {
   }
   
   createCarsWithNames(names) {
-    return names.map(name => new Car(name));
+    return names.map(name => ({name, distance: 0}));
   }
 
   async inputMoveCount() {
@@ -72,36 +50,34 @@ class App {
   }
 
   raceCarsForCount(cars, count) {
-    for (let i=0 ; i<count ; i++) {
-      this.raceCars(cars);
-    }
+    const carsAfterRaces = Array(count).fill(0).reduce((prev) => {
+      const carsAfterRace = this.raceCars(prev);
+      this.outputCars(carsAfterRace);
+      return carsAfterRace;
+    }, cars);
 
-    const { winners } = cars.reduce((acc, cur) => {
-      if (cur.distance >= acc.maxDistance) {
-        acc.winners.push(cur.name);
-        acc.maxDistance = cur.distance;
-        return acc;
-      } else {
-        return {
-          winners: [cur.name], 
-          maxDistance: cur.distance
-        };
-      }
-    }, {winners: [], maxDistance: 0}); 
+    const winners = this.winnersForCars(carsAfterRaces);
     return winners;
   }
 
   raceCars(cars) {
-    cars.forEach((car) => this.raceCar(car));
+    const carsAfterRace = cars.map((car) => this.raceCar(car));
+    return carsAfterRace;
+  }
+
+  outputCars(cars) {
     cars.forEach(car => {
       MissionUtils.Console.print(`${car.name} : ${'-'.repeat(car.distance)}`)
-    })
+    });
   }
 
   raceCar(car) {
     if (this.isCarMovable()) {
-      car.move();
+      const movedCar = this.moveFoward(car);
+      return movedCar;
     }
+  
+    return car;
   }
 
   isCarMovable() {
@@ -109,6 +85,27 @@ class App {
       return true;
     }
     return false;
+  }
+
+  moveFoward(car) {
+    return {...car, distance: car.distance + 1};
+  }
+
+  winnersForCars(cars) {
+    const { winners } = cars.reduce((acc, cur) => {
+      if (cur.distance >= acc.maxDistance) {
+        acc.winners.push(cur.name);
+        acc.maxDistance = cur.distance;
+        return acc;
+      } 
+
+      return {
+        winners: [cur.name], 
+        maxDistance: cur.distance
+      };
+    }, {winners: [], maxDistance: 0}); 
+
+    return winners;
   }
 
   outputWinners(winners) {
