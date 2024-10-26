@@ -129,8 +129,8 @@ class Race {
       return winners;
     }, [this.#cars[0]]);
 
-    this.#log += '최종 우승자 : ' + winners.map(winner => winner.name).join(', ');
-    return this.#log;
+    const winnersLog = '최종 우승자 : ' + winners.map(winner => winner.name).join(', ');
+    return this.#log + winnersLog;
   }
 }
 
