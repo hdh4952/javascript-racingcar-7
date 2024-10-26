@@ -1,52 +1,72 @@
 import { MissionUtils } from "@woowacourse/mission-utils";
 
+const Input = (() => {
+  class Input {
+    #input;
+  
+    constructor(input) {
+      this.#input = input;
+    }
+  
+    static async readInput(msg) {
+      const input = await MissionUtils.Console.readLineAsync(msg);
+      return new Input(input); 
+    }
+
+    parseCarNames() {
+      const carNames = this.#input.split(',');
+      carNames.forEach(carName => this.#throwErrorIfInvalidCarName(carName));
+      return carNames;
+    }
+
+    #throwErrorIfInvalidCarName(name) {
+      if (!(0 < name.length && name.length <= 5)) {
+        throw new Error('[ERROR]');
+      }
+    }
+
+    parseMoveCount() {
+      const count = parseInt(this.#input);
+      this.#throwErrorIfisNaN(count);
+      return count;
+    }
+
+    #throwErrorIfisNaN(count) {
+      if (Number.isNaN(count)) {
+        throw new Error('[ERROR]');
+      }
+    }
+  }
+
+  return {
+    readInput: Input.readInput
+  };
+})();
+
+
 class App {
   async run() {
-    const cars = await this.inputCars();
-    const moveCount = await this.inputMoveCount();
+    const cars = await this.getCars();
+    const moveCount = await this.getMoveCount();
     const winners = this.raceCarsForCount(cars, moveCount);
     this.outputWinners(winners);
   }
 
-  async inputCars() {
-    const rawInput = await MissionUtils.Console.readLineAsync('경주할 자동차 이름을 입력하세요.(이름은 쉼표(,) 기준으로 구분)\n');
-    const carNames = this.parseCarNames(rawInput);
+  async getCars() {
+    const input = await Input.readInput('경주할 자동차 이름을 입력하세요.(이름은 쉼표(,) 기준으로 구분)\n');
+    const carNames = input.parseCarNames();
     const cars = this.createCarsWithNames(carNames);
     return cars;
-  } 
-
-  parseCarNames(input) {
-    const carNames = input.split(',');
-    carNames.forEach(carName => this.throwErrorIfInvalidCarName(carName));
-    return carNames;
-  }
-
-  throwErrorIfInvalidCarName(name) {
-    if (!(0 < name.length && name.length <= 5)) {
-      throw new Error('[ERROR]');
-    }
   }
   
   createCarsWithNames(names) {
     return names.map(name => ({name, distance: 0}));
   }
 
-  async inputMoveCount() {
-    const rawInput = await MissionUtils.Console.readLineAsync('시도할 횟수는 몇 회인가요?\n');
-    const moveCount = this.parseMoveCount(rawInput);
+  async getMoveCount() {
+    const input = await Input.readInput('시도할 횟수는 몇 회인가요?\n');
+    const moveCount = input.parseMoveCount();
     return moveCount;
-  }
-
-  parseMoveCount(input) {
-    const count = parseInt(input);
-    this.throwErrorIfisNaN(count);
-    return count;
-  }
-
-  throwErrorIfisNaN(count) {
-    if (Number.isNaN(count)) {
-      throw new Error('[ERROR]');
-    }
   }
 
   raceCarsForCount(cars, count) {
